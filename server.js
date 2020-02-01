@@ -6,7 +6,7 @@ const nodemon = require('nodemon')
 const url = 'https://www.takealot.com/all?_sb=1&_r=1&_si=3a9fcd87be31780b28a1bd97ce88c785&qsearch=casio+gshock';
 
 (async() => {
-	let browser = await puppeteer.launch({headless: false})
+	let browser = await puppeteer.launch({headless: true})
 	let page = await browser.newPage()
 	await page.goto(url, {waitUntil: 'networkidle2'});
 	await page.evaluate(() => {
@@ -26,7 +26,7 @@ const url = 'https://www.takealot.com/all?_sb=1&_r=1&_si=3a9fcd87be31780b28a1bd9
 		  		});
 			});
 			console.log(content)
-			// await browser.close()
+			await browser.close()
 		})().catch(e => {
 			console.log(e)
 		})
