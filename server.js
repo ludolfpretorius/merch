@@ -1,76 +1,59 @@
 const cheerio = require('cheerio')
-const axios = require('axios')
 const puppeteer = require('puppeteer')
 const nodemon = require('nodemon')
 
-const url = 'https://www.takealot.com/all?_sb=1&_r=1&_si=3a9fcd87be31780b28a1bd97ce88c785&qsearch=casio+gshock';
+const url = 'https://www.bidorbuy.co.za/jsp/tradesearch/TradeSearch.jsp?mode=execute&isInteractive=true&sellerSearchUrl=https%3A%2F%2Fwww.bidorbuy.co.za%2Fjsp%2Fusersearch%2FUserNameSearch.jsp%3FUserNameChars%3D&IncludedKeywords=google+mini&CategoryId=-1';
 
 (async() => {
-	let browser = await puppeteer.launch({headless: false})
-	let page = await browser.newPage()
-	await page.goto(url, {waitUntil: 'networkidle2'});
-	await page.evaluate(() => {
-		const footer = document.querySelector('.footer')
-		footer.scrollIntoView({behavior: "smooth"})
+	let browser = await puppeteer.launch({
+		headless: true,
+		//args: ['--proxy-server=socks5://127.0.0.1:9050']
 	})
-	setTimeout(() => {
-		(async () => {
-			const html = await page.content()
-			let content = []
-			const $ =  cheerio.load(html);
-			 $('.product-list > li').each(function() {
-		 		content.push({
-		 			thumb: $(this).find('.p-thumb img').attr('src'),
-		    		title: $(this).find('.p-data a').text(),
-		    		price: $(this).find('.price .currency').text() + $(this).find('.price .amount').text()
-		  		});
-			});
-			console.log(content)
-			// await browser.close()
-		})().catch(e => {
-			console.log(e)
-		})
-	}, 1000)
+	let page = await browser.newPage()
+	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
+
+	await page.setViewport({
+        width: 1200,
+        height: 800
+    });
+
+    await autoScroll(page);
+
+   	const html = await page.content()
+	let content = []
+	const $ = await cheerio.load(html);
+	$('.tradelist-item-container-grid').each(function() {
+ 		content.push({
+ 			thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
+    		title: $(this).find('.tradelist-item-title').text().replace(/\s/g, ''),
+    		price: $(this).find('.tradelist-item-price > span > span').eq(0).text() + $(this).find('.tradelist-item-price > span > span').eq(1).text(),
+    		//shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
+    		//rating: $(this).find('.a-icon-star-small').text(),
+    		link: $(this).find('.tradelist-grid-item-link').attr('href')
+  		});
+	});
+	console.log(content)
+	await browser.close()
+
 })().catch(e => {
 	console.log(e)
-})
+});
 
+async function autoScroll(page) {
+    await page.evaluate(async () => {
+        await new Promise((resolve, reject) => {
+            var totalHeight = 0;
+            var distance = 100;
+            var timer = setInterval(() => {
+                var scrollHeight = document.body.scrollHeight;
+                window.scrollBy(0, distance);
+                totalHeight += distance;
 
-
-
-
-
-
-
-
-
-
-
-
-
-// const browserInstance = puppeteer.launch({headless: false});
-// browserInstance.then(browser => browser.newPage())
-// .then(page => {
-// 	return page.goto(url, {waitUntil: 'networkidle2'}).then(function() {
-// 		//page.evaluate(() => {
-// 		  //const footer = document.querySelector('.footer')
-// 		  //footer.scrollIntoView({behavior: "smooth"})
-// 		  //window.scrollBy(0, document.body.scrollHeight);
-		  
-// 		//});
-// 		return page.content();
-// 	});
-
-// })
-// .then(html => {
-// 	const $ = cheerio.load(html);
-// 	let content = [];
-// 	$('.product-list > li').each(function() {
-//  		content.push({
-//  			thumb: $(this).find('.p-thumb img').attr('src'),
-//     		title: $(this).find('.p-data a').text(),
-//     		price: $(this).find('.price .currency').text() + $(this).find('.price .amount').text()
-//   		});
-// 	});
-// 	console.log(content);
-// })
+                if(totalHeight >= scrollHeight){
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, 30);
+        });
+    });
+}
