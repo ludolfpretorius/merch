@@ -38,14 +38,16 @@ const handleBidorbuy = async(puppeteer, cheerio) => {
 	let content = []
 	const $ = await cheerio.load(html);
 	$('.tradelist-item-container-grid').each(function() {
-        content.push({
-            thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
-            title: $(this).find('.tradelist-item-title').text().replace(/\s/g, ''),
-            price: $(this).find('.tradelist-item-price > span > span').eq(0).text() + $(this).find('.tradelist-item-price > span > span').eq(1).text(),
-            //shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-            //rating: $(this).find('.a-icon-star-small').text(),
-            link: $(this).find('.tradelist-grid-item-link').attr('href')
-        });
+        while(content.length <= 10) {
+            content.push({
+                thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
+                title: $(this).find('.tradelist-item-title').text().replace(/\s/g, ''),
+                price: $(this).find('.tradelist-item-price > span > span').eq(0).text() + $(this).find('.tradelist-item-price > span > span').eq(1).text(),
+                //shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
+                //rating: $(this).find('.a-icon-star-small').text(),
+                link: $(this).find('.tradelist-grid-item-link').attr('href')
+            });
+        }
     });
 
 	//console.log(content);

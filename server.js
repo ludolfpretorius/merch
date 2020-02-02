@@ -23,17 +23,23 @@ app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html')
 })
 
-app.get('/bidorbuy', (req, res) => {
+app.get('/search', (req, res) => {
 	res.sendFile(__dirname + '/public/bidorbuy.html')
 
 });
-app.post('/bidorbuy', (req, res) => {
+app.post('/search', (req, res) => {
 	(async() => {
-		const content = await bidorbuy.handleBidorbuy(puppeteer, cheerio);
+		const url1 = await amazon.handleAmazon(puppeteer, cheerio);
+		const url2 = await bidorbuy.handleBidorbuy(puppeteer, cheerio);
+		const url3 = await ebay.handleEbay(puppeteer, cheerio);
+		const url4 = await gumtree.handleGumtree(puppeteer, cheerio);
+		const url5 = await takealot.handleTakealot(puppeteer, cheerio);
+
+		const content = await [...url1, ...url2, ...url3, ...url4, ...url5]
 		await res.json(content);
+		await console.log(content);
 	})()
 });
-
 
 
 app.listen(3000, () => {

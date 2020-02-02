@@ -1,4 +1,4 @@
-fetch('http://localhost:3000/bidorbuy', {
+fetch('http://localhost:3000/search', {
 	method: 'post',
 	headers: {'Content-Type': 'application/json'}
 	// body: JSON.stringify({
