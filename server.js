@@ -1,59 +1,41 @@
 const cheerio = require('cheerio')
 const puppeteer = require('puppeteer')
 const nodemon = require('nodemon')
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
-const url = 'https://www.bidorbuy.co.za/jsp/tradesearch/TradeSearch.jsp?mode=execute&isInteractive=true&sellerSearchUrl=https%3A%2F%2Fwww.bidorbuy.co.za%2Fjsp%2Fusersearch%2FUserNameSearch.jsp%3FUserNameChars%3D&IncludedKeywords=google+mini&CategoryId=-1';
+const amazon = require('./controllers/amazon');
+const bidorbuy = require('./controllers/bidorbuy');
+const ebay = require('./controllers/ebay');
+const gumtree = require('./controllers/gumtree');
+const takealot = require('./controllers/takealot');
 
-(async() => {
-	let browser = await puppeteer.launch({
-		headless: true,
-		//args: ['--proxy-server=socks5://127.0.0.1:9050']
-	})
-	let page = await browser.newPage()
-	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
+const app = express();
+app.use(bodyParser.urlencoded({
+	extended: true
+}));
+app.use(bodyParser.json());
+app.use(cors());
+app.use(express.static('public'));
 
-	await page.setViewport({
-        width: 1200,
-        height: 800
-    });
+app.get('/', (req, res) => {
+	res.sendFile(__dirname + '/public/index.html')
+})
 
-    await autoScroll(page);
+app.get('/bidorbuy', (req, res) => {
+	res.sendFile(__dirname + '/public/bidorbuy.html')
 
-   	const html = await page.content()
-	let content = []
-	const $ = await cheerio.load(html);
-	$('.tradelist-item-container-grid').each(function() {
- 		content.push({
- 			thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
-    		title: $(this).find('.tradelist-item-title').text().replace(/\s/g, ''),
-    		price: $(this).find('.tradelist-item-price > span > span').eq(0).text() + $(this).find('.tradelist-item-price > span > span').eq(1).text(),
-    		//shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-    		//rating: $(this).find('.a-icon-star-small').text(),
-    		link: $(this).find('.tradelist-grid-item-link').attr('href')
-  		});
-	});
-	console.log(content)
-	await browser.close()
-
-})().catch(e => {
-	console.log(e)
+});
+app.post('/bidorbuy', (req, res) => {
+	(async() => {
+		const content = await bidorbuy.handleBidorbuy(puppeteer, cheerio);
+		await res.json(content);
+	})()
 });
 
-async function autoScroll(page) {
-    await page.evaluate(async () => {
-        await new Promise((resolve, reject) => {
-            var totalHeight = 0;
-            var distance = 100;
-            var timer = setInterval(() => {
-                var scrollHeight = document.body.scrollHeight;
-                window.scrollBy(0, distance);
-                totalHeight += distance;
 
-                if(totalHeight >= scrollHeight){
-                    clearInterval(timer);
-                    resolve();
-                }
-            }, 30);
-        });
-    });
-}
+
+app.listen(3000, () => {
+	console.log('Listening on port 3000')
+})

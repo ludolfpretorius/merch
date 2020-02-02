@@ -23,8 +23,8 @@ const handleBidorbuy = async(puppeteer, cheerio) => {
 	let browser = await puppeteer.launch({
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']
-	})
-	let page = await browser.newPage()
+	});
+	let page = await browser.newPage();
 	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
 
     await page.setViewport({
@@ -48,9 +48,9 @@ const handleBidorbuy = async(puppeteer, cheerio) => {
         });
     });
 
-	//console.log(content)
-	await browser.close()
-
+	//console.log(content);
+	await browser.close();
+    return content
 }
 
 module.exports = {
