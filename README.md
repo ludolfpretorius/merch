@@ -3,6 +3,7 @@ Merch is a classifieds search engine that compares the products from different o
 
 # Features to add
 - Grab the alt text for images
+- Add condition of merch (new or used)
 - Filters
 - Currency API to convert Amazon prices
 - Featured images for products
