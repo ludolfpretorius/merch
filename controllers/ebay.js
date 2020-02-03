@@ -12,17 +12,20 @@ const handleEbay = async(puppeteer, cheerio) => {
 	let content = []
 	const $ = await cheerio.load(html);
 	$('.srp-results > li').each(function() {
- 		content.push({
- 			thumb: $(this).find('.s-item__image-wrapper > img').attr('src'),
-    		title: $(this).find('.s-item__title').text(),
-    		price: $(this).find('.s-item__price').text() + $(this).find('.price .amount').text(),
-    		shipping: $(this).find('.s-item__shipping').text(),
-            rating: $(this).find('.b-starrating > .clipped').text(),
-            link: $(this).find('.s-item__link').attr('href')
-  		});
+		while(content.length <= 10) {
+	 		content.push({
+	 			thumb: $(this).find('.s-item__image-wrapper > img').attr('src'),
+	    		title: $(this).find('.s-item__title').text(),
+	    		price: $(this).find('.s-item__price').text() + $(this).find('.price .amount').text(),
+	    		shipping: $(this).find('.s-item__shipping').text(),
+	            rating: $(this).find('.b-starrating > .clipped').text(),
+	            link: $(this).find('.s-item__link').attr('href')
+	  		});
+	 	}
 	});
 	//console.log(content)
-	await browser.close()
+	await browser.close();
+	return content
 }
 
 module.exports = {

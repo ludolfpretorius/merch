@@ -38,19 +38,21 @@ const handleTakealot = async(puppeteer, cheerio) => {
 	let content = []
 	const $ = await cheerio.load(html);
 	$('.product-list > li').each(function() {
- 		content.push({
- 			thumb: $(this).find('.p-thumb img').attr('src'),
-            title: $(this).find('.p-data a').text(),
-            price: $(this).find('.price .currency').text() + $(this).find('.price .amount').text(),
-            shipping: $(this).find('.shipping-information > div > span > strong').text(),
-            rating: $(this).find('.product-rating > span').attr('title'),
-            link: 'https://takealot.com' + $(this).find('.p-thumb > a').attr('href')
-  		});
+        while(content.length <= 10) {
+     		content.push({
+     			thumb: $(this).find('.p-thumb img').attr('src'),
+                title: $(this).find('.p-data a').text(),
+                price: $(this).find('.price .currency').text() + $(this).find('.price .amount').text(),
+                shipping: $(this).find('.shipping-information > div > span > strong').text(),
+                rating: $(this).find('.product-rating > span').attr('title'),
+                link: 'https://takealot.com' + $(this).find('.p-thumb > a').attr('href')
+      		});
+        }
 	});
 
 	//console.log(content)
-	await browser.close()
-
+	await browser.close();
+    return content
 }
 
 module.exports = {

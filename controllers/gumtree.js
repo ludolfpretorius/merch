@@ -39,19 +39,21 @@ const handleGumtree = async(puppeteer, cheerio) => {
 	let content = []
 	const $ = await cheerio.load(html);
 	$('.related-content > .related-item').each(function() {
-        content.push({
-            thumb: $(this).find('.img-container img').attr('data-src'),
-            title: $(this).find('.title > a > span').text(),
-            price: $(this).find('.ad-price').text().replace(/\s/g,''),
-            shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-            //rating: $(this).find('.a-icon-star-small').text(),
-            link: 'https://www.gumtree.co.za' + $(this).find('.title > a').attr('href')
-        });
+        while(content.length <= 10) {
+            content.push({
+                thumb: $(this).find('.img-container img').attr('data-src'),
+                title: $(this).find('.title > a > span').text(),
+                price: $(this).find('.ad-price').text().replace(/\s/g,''),
+                shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
+                //rating: $(this).find('.a-icon-star-small').text(),
+                link: 'https://www.gumtree.co.za' + $(this).find('.title > a').attr('href')
+            });
+        }
     });
 
 	//console.log(content)
-	await browser.close()
-
+	await browser.close();
+    return content
 }
 
 module.exports = {
