@@ -28,17 +28,18 @@ app.get('/search', (req, res) => {
 
 });
 app.post('/search', (req, res) => {
-	(async() => {
-		const url1 = await amazon.handleAmazon(puppeteer, cheerio);
-		const url2 = await bidorbuy.handleBidorbuy(puppeteer, cheerio);
-		const url3 = await ebay.handleEbay(puppeteer, cheerio);
-		const url4 = await gumtree.handleGumtree(puppeteer, cheerio);
-		const url5 = await takealot.handleTakealot(puppeteer, cheerio);
-
-		const content = await [...url1, ...url2, ...url3, ...url4, ...url5]
-		await res.json(content);
-		await console.log(content);
-	})()
+	const url1 = amazon.handleAmazon(puppeteer, cheerio);
+	const url2 = bidorbuy.handleBidorbuy(puppeteer, cheerio);
+	const url3 = ebay.handleEbay(puppeteer, cheerio);
+	const url4 = gumtree.handleGumtree(puppeteer, cheerio);
+	const url5 = takealot.handleTakealot(puppeteer, cheerio);
+	function handleRejection(prom) {
+		return prom.catch(err => ({error: err}))
+	}
+	async function resolveAll(arr) {
+		return await Promise.all([url1, url2, url3, url4, url5].map(handleRejection));
+	}
+	resolveAll().then(results => res.json(results))
 });
 
 
