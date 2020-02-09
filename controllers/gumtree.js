@@ -1,5 +1,7 @@
-const url = 'https://www.gumtree.co.za/s-all-the-ads/v1b0p1?q=samsung+a50';
-
+// add filters = '&sort=pr&order='
+// newest is the default query
+// price low = 'asc'
+// price high = 'dec'
 
 const autoScroll = async(page) => {
     await page.evaluate(async () => {
@@ -20,7 +22,19 @@ const autoScroll = async(page) => {
     });
 }
 
-const handleGumtree = async(puppeteer, cheerio) => {
+const handleGumtree = async(puppeteer, cheerio, keywords, sort) => {
+
+    if (sort === 'price-low') {
+        sort = '&sort=pr&order=asc'
+    } else if (sort === 'price-high') {
+        sort = '&sort=pr&order=dec'
+    } else if (sort === 'newest') {
+        sort = ''
+    } else {
+        sort = ''
+    }
+    const url = `https://www.gumtree.co.za/s-all-the-ads/v1b0p1?q=${keywords}${sort}`;
+
 	let browser = await puppeteer.launch({
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']
