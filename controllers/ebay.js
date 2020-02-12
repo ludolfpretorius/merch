@@ -1,6 +1,21 @@
-const url = 'https://www.ebay.com/sch/i.html?_from=R40&_trksid=m570.l1313&_nkw=google+mini&_sacat=0';
+// add filter = '&_sop='
+// price low = '15'
+// price high = '16'
+// new = '10'
 
-const handleEbay = async(puppeteer, cheerio) => {
+const handleEbay = async(puppeteer, cheerio, keywords, sort) => {
+	
+	if (sort === 'price-low') {
+        sort = '15'
+    } else if (sort === 'price-high') {
+        sort = '16'
+    } else if (sort === 'newest') {
+        sort = '10'
+    } else {
+        sort = ''
+    }
+	const url = `https://www.ebay.com/sch/i.html?_nkw=${keywords}&_sop=${sort}`;
+
 	let browser = await puppeteer.launch({
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']

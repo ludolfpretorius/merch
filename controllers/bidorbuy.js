@@ -1,4 +1,8 @@
-const url = 'https://www.bidorbuy.co.za/jsp/tradesearch/TradeSearch.jsp?mode=execute&isInteractive=true&sellerSearchUrl=https%3A%2F%2Fwww.bidorbuy.co.za%2Fjsp%2Fusersearch%2FUserNameSearch.jsp%3FUserNameChars%3D&IncludedKeywords=google+mini&CategoryId=-1';
+// add sort = '&tradeListFormSubmited=true&LogQuery=false&pageNo=1&CustomFilter=None&tradeListFilteredFields=&OrderBy='
+// default = 'Default'
+// Price low-high = 'Price'
+// Price high-low = 'HigherPrice'
+// Newest = 'Opening'
 
 const autoScroll = async(page) => {
     await page.evaluate(async () => {
@@ -19,7 +23,19 @@ const autoScroll = async(page) => {
     });
 }
 
-const handleBidorbuy = async(puppeteer, cheerio) => {
+const handleBidorbuy = async(puppeteer, cheerio, keywords, sort) => {
+
+    if (sort === 'price-low') {
+        sort = 'Price'
+    } else if (sort === 'price-high') {
+        sort = 'HigherPrice'
+    } else if (sort === 'newest') {
+        sort = 'Opening'
+    } else {
+        sort = 'Default'
+    }
+    const url = `https://www.bidorbuy.co.za/jsp/tradesearch/TradeSearch.jsp?mode=execute&isInteractive=true&sellerSearchUrl=https%3A%2F%2Fwww.bidorbuy.co.za%2Fjsp%2Fusersearch%2FUserNameSearch.jsp%3FUserNameChars%3D&IncludedKeywords=${keywords}&CategoryId=-1&tradeListFormSubmited=true&LogQuery=false&pageNo=1&CustomFilter=None&tradeListFilteredFields=&OrderBy=${sort}`;
+
 	let browser = await puppeteer.launch({
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']

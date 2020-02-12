@@ -1,4 +1,7 @@
-const url = 'https://www.takealot.com/all?_sb=1&_r=1&_si=3a9fcd87be31780b28a1bd97ce88c785&qsearch=casio+gshock';
+// add filter = 'sort='
+// price low = 'Price%20Ascending'
+// price high = 'Price%20Descending'
+// newest = 'ReleaseDate%20Descending'
 
 const autoScroll = async(page) => {
     await page.evaluate(async () => {
@@ -19,7 +22,19 @@ const autoScroll = async(page) => {
     });
 }
 
-const handleTakealot = async(puppeteer, cheerio) => {
+const handleTakealot = async(puppeteer, cheerio, keywords, sort) => {
+
+    if (sort === 'price-low') {
+        sort = 'sort=Price%20Ascending&'
+    } else if (sort === 'price-high') {
+        sort = 'sort=Price%20Descending&'
+    } else if (sort === 'newest') {
+        sort = 'sort=ReleaseDate%20Descending&'
+    } else {
+        sort = ''
+    }
+    const url = `https://www.takealot.com/all?${sort}qsearch=${keywords}`;
+
 	let browser = await puppeteer.launch({
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']

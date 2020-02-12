@@ -23,16 +23,45 @@ app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html')
 })
 
-app.get('/search', (req, res) => {
-	res.sendFile(__dirname + '/public/bidorbuy.html')
+app.get('/search/:search', (req, res) => {
+	const { search } = req.params
+	let searchParams = search.replace(/&/g, '=').split('=')
+	let keywords;
+	let sort;
+	if (searchParams[0] === 'keywords') {
+		keywords = searchParams[1]
+	} else if (searchParams[2] === 'sort') {
+		sort = searchParams[3]
+	}
 
+	const url1 = amazon.handleAmazon(puppeteer, cheerio, keywords, sort);
+	const url2 = bidorbuy.handleBidorbuy(puppeteer, cheerio, keywords, sort);
+	const url3 = ebay.handleEbay(puppeteer, cheerio, keywords, sort);
+	const url4 = gumtree.handleGumtree(puppeteer, cheerio, keywords, sort);
+	const url5 = takealot.handleTakealot(puppeteer, cheerio, keywords, sort);
+	function handleRejection(prom) {
+		return prom.catch(err => console.log(err)) //({error: err})
+	}
+	async function resolveAll(arr) {
+		return await Promise.all([url1, url2, url3, url4, url5].map(handleRejection));
+	}
+	resolveAll().then(results => res.json(results))
+
+	// (async() => {
+	// 	let t = await bidorbuy.handleBidorbuy(puppeteer, cheerio, keywords, sort)
+	// 	await console.log(t)
+	// 	await res.json(t)
+	// })()
+
+
+	//res.sendFile(__dirname + '/public/bidorbuy.html')
 });
 app.post('/search', (req, res) => {
-	const url1 = amazon.handleAmazon(puppeteer, cheerio);
-	const url2 = bidorbuy.handleBidorbuy(puppeteer, cheerio);
-	const url3 = ebay.handleEbay(puppeteer, cheerio);
-	const url4 = gumtree.handleGumtree(puppeteer, cheerio);
-	const url5 = takealot.handleTakealot(puppeteer, cheerio);
+	const url1 = amazon.handleAmazon(puppeteer, cheerio, keywords, sort);
+	const url2 = bidorbuy.handleBidorbuy(puppeteer, cheerio, keywords, sort);
+	const url3 = ebay.handleEbay(puppeteer, cheerio, keywords, sort);
+	const url4 = gumtree.handleGumtree(puppeteer, cheerio, keywords, sort);
+	const url5 = takealot.handleTakealot(puppeteer, cheerio, keywords, sort);
 	function handleRejection(prom) {
 		return prom.catch(err => ({error: err}))
 	}
