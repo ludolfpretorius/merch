@@ -22,6 +22,16 @@ const autoScroll = async(page) => {
     });
 }
 
+async function trimTitle(arr) {
+    await arr.forEach(obj => {
+        if (obj.title.length > 61) {
+            obj.titleshort = obj.title.slice(0, 61).trim() + '...'
+        } else {
+            obj.titleshort = obj.title
+        }
+    })
+}
+
 const handleTakealot = async(puppeteer, cheerio, keywords, sort) => {
 
     if (sort === 'price-low') {
@@ -39,7 +49,8 @@ const handleTakealot = async(puppeteer, cheerio, keywords, sort) => {
 		headless: true,
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']
 	})
-	let page = await browser.newPage()
+	let page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0);
 	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
 
     await page.setViewport({
@@ -52,21 +63,26 @@ const handleTakealot = async(puppeteer, cheerio, keywords, sort) => {
     const html = await page.content()
 	let content = []
 	const $ = await cheerio.load(html);
+    function fixPrice(listItem) {//
+        let getPrice = listItem.find('.price .currency').text() + listItem.find('.price .amount').text();
+        return Number(getPrice.replace(/([R]|\s|[,])/g, ''))
+    }
 	$('.product-list > li').each(function() {
-        while(content.length <= 10) {
+        if (content.length <= 9) {
      		content.push({
      			thumb: $(this).find('.p-thumb img').attr('src'),
                 title: $(this).find('.p-data a').text(),
-                price: $(this).find('.price .currency').text() + $(this).find('.price .amount').text(),
+                price: fixPrice($(this)),
                 shipping: $(this).find('.shipping-information > div > span > strong').text(),
                 rating: $(this).find('.product-rating > span').attr('title'),
-                link: 'https://takealot.com' + $(this).find('.p-thumb > a').attr('href')
+                link: 'https://takealot.com' + $(this).find('.p-thumb > a').attr('href'),
+                site: 'takealot'
       		});
         }
 	});
 
-	//console.log(content)
-	await browser.close();
+	await browser.close()
+    await trimTitle(content)
     return content
 }
 

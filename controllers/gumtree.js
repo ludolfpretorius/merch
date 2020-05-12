@@ -22,6 +22,16 @@ const autoScroll = async(page) => {
     });
 }
 
+async function trimTitle(arr) {
+    await arr.forEach(obj => {
+        if (obj.title.length > 61) {
+            obj.titleshort = obj.title.slice(0, 61).trim() + '...'
+        } else {
+            obj.titleshort = obj.title
+        }
+    })
+}
+
 const handleGumtree = async(puppeteer, cheerio, keywords, sort) => {
 
     if (sort === 'price-low') {
@@ -40,6 +50,7 @@ const handleGumtree = async(puppeteer, cheerio, keywords, sort) => {
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']
 	})
 	let page = await browser.newPage()
+    await page.setDefaultNavigationTimeout(0);
 	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
 
     await page.setViewport({
@@ -52,21 +63,26 @@ const handleGumtree = async(puppeteer, cheerio, keywords, sort) => {
     const html = await page.content()
 	let content = []
 	const $ = await cheerio.load(html);
+    function fixPrice(listItem) {//
+        let getPrice = listItem.find('.ad-price').text();
+        return Number(getPrice.replace(/([R]|\s|[,])/g, ''))
+    }
 	$('.related-content > .related-item').each(function() {
-        while(content.length <= 10) {
+        if (content.length <= 9) {
             content.push({
                 thumb: $(this).find('.img-container img').attr('data-src'),
                 title: $(this).find('.title > a > span').text(),
-                price: $(this).find('.ad-price').text().replace(/\s/g,''),
+                price: fixPrice($(this)),
                 shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-                //rating: $(this).find('.a-icon-star-small').text(),
-                link: 'https://www.gumtree.co.za' + $(this).find('.title > a').attr('href')
+                rating: 'N/A', //$(this).find('.a-icon-star-small').text(),
+                link: 'https://www.gumtree.co.za' + $(this).find('.title > a').attr('href'),
+                site: 'gumtree'
             });
         }
     });
 
-	//console.log(content)
-	await browser.close();
+	await browser.close()
+    await trimTitle(content)
     return content
 }
 

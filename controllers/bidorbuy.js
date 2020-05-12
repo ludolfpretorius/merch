@@ -23,6 +23,16 @@ const autoScroll = async(page) => {
     });
 }
 
+async function trimTitle(arr) {
+    await arr.forEach(obj => {
+        if (obj.title.length > 61) {
+            obj.titleshort = obj.title.slice(0, 61).trim() + '...'
+        } else {
+            obj.titleshort = obj.title
+        }
+    })
+}
+
 const handleBidorbuy = async(puppeteer, cheerio, keywords, sort) => {
 
     if (sort === 'price-low') {
@@ -41,6 +51,7 @@ const handleBidorbuy = async(puppeteer, cheerio, keywords, sort) => {
 		//args: ['--proxy-server=socks5://127.0.0.1:9050']
 	});
 	let page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(0);
 	await page.goto(url, {waitUntil: 'load'}); //networkidle2 to wait a little longer
 
     await page.setViewport({
@@ -53,21 +64,26 @@ const handleBidorbuy = async(puppeteer, cheerio, keywords, sort) => {
     const html = await page.content()
 	let content = []
 	const $ = await cheerio.load(html);
+    function fixPrice(listItem) {//
+        let getPrice = listItem.find('meta[itemprop=price]').attr('content') //listItem.find('.tradelist-item-price > span > span').eq(0).text() + listItem.find('.tradelist-item-price > span > span').eq(1).text();
+        return Number(getPrice)
+    }
 	$('.tradelist-item-container-grid').each(function() {
-        while(content.length <= 10) {
+        if (content.length <= 9) {
             content.push({
                 thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
-                title: $(this).find('.tradelist-item-title').text().replace(/\s/g, ''),
-                price: $(this).find('.tradelist-item-price > span > span').eq(0).text() + $(this).find('.tradelist-item-price > span > span').eq(1).text(),
-                //shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-                //rating: $(this).find('.a-icon-star-small').text(),
-                link: $(this).find('.tradelist-grid-item-link').attr('href')
+                title: $(this).find('.tradelist-item-title').text().replace(/(?:\r\n|\r|\n)/g, '').trim().replace(/\s\s+/g, ' '),
+                price: fixPrice($(this)),
+                shipping: $(this).find('.tradelist-item-price time').text(),
+                rating: $(this).find('.user-verified') ? 'Verified user' : 'User not verified',
+                link: $(this).find('.tradelist-grid-item-link').attr('href'),
+                site: 'bidorbuy'
             });
         }
     });
 
-	//console.log(content);
 	await browser.close();
+    await trimTitle(content)
     return content
 }
 
