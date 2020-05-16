@@ -33,7 +33,9 @@ app.get('/', (req, res) => {
 	res.sendFile(__dirname + '/public/index.html')
 })
 
+
 app.get('/search/:search', (req, res) => {
+	console.time('searched')
 	const { search } = req.params
 	let searchParams = search.replace(/&/g, '=').split('=')
 	let keywords;
@@ -69,10 +71,21 @@ app.get('/search/:search', (req, res) => {
 		const contentReady = merged.filter(a => {
 			return a.thumb
 		})
+		contentReady.forEach((a, i) => {
+			a.id = Math.random().toString().slice(2)
+			a.wished = false
+			contentReady.forEach(b => {
+				if (i !== contentReady.indexOf(b) && a.id === b.id) {
+					a.id = Math.random().toString().slice(2)
+				}
+			}) 
+		})
 		return contentReady
 	})
-	.then(results => res.json(results)).then(() => res.end())
+	.then(results => res.json(results)).then(() => {res.end(); console.timeEnd('searched')})
+
 });
+
 
 
 app.listen(3000, () => {
