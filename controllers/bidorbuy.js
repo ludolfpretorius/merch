@@ -68,20 +68,22 @@ const handleBidorbuy = async(puppeteer, cheerio, keywords, sort) => {
         let getPrice = listItem.find('meta[itemprop=price]').attr('content') //listItem.find('.tradelist-item-price > span > span').eq(0).text() + listItem.find('.tradelist-item-price > span > span').eq(1).text();
         return Number(getPrice)
     }
+    function fixRating(rating) {
+        return rating.length ? Number(rating.split(' ')[0]) : null
+    }
 	$('.tradelist-item-container-grid').each(function() {
         if (content.length <= 9) {
             content.push({
                 thumb: $(this).find('.tradelist-item-thumbnail img').attr('src'),
                 title: $(this).find('.tradelist-item-title').text().replace(/(?:\r\n|\r|\n)/g, '').trim().replace(/\s\s+/g, ' '),
                 price: fixPrice($(this)),
-                shipping: $(this).find('.tradelist-item-price time').text(),
-                rating: $(this).find('.user-verified') ? 'Verified user' : 'User not verified',
+                meta: [$(this).find('.tradelist-item-price time').text(), $(this).find('.user-verified') ? 'Verified user' : 'User not verified'],
+                rating: 0,
                 link: $(this).find('.tradelist-grid-item-link').attr('href'),
                 site: 'bidorbuy'
             });
         }
     });
-
 	await browser.close();
     await trimTitle(content)
     return content

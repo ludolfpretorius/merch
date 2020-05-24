@@ -41,14 +41,17 @@ const handleEbay = async(puppeteer, cheerio, keywords, sort) => {
         let getPrice = listItem.find('.s-item__price').text() + listItem.find('.price .amount').text();
         return Number(getPrice.replace(/([ZAR]|\s|[,])/g, ''))
     }
+    function fixRating(rating) {
+		return rating.length ? Number(rating.split(' ')[0]) : null
+	}
 	$('.srp-results > li').each(function() {
 		if (content.length <= 9) {
 	 		content.push({
 	 			thumb: $(this).find('.s-item__image-wrapper > img').attr('src'),
 	    		title: $(this).find('.s-item__title').text(),
 	    		price: fixPrice($(this)),
-	    		shipping: $(this).find('.s-item__shipping > span') ? $(this).find('.s-item__shipping > span').text() : $(this).find('.s-item__shipping').text(),
-	            rating: $(this).find('.b-starrating > .clipped').text(),
+	    		meta: $(this).find('.s-item__shipping > span').text().length ? [$(this).find('.s-item__shipping > span').text()] : ['N/A'],
+	            rating: fixRating($(this).find('.b-starrating > .clipped').text()),
 	            link: $(this).find('.s-item__link').attr('href'),
 	            site: 'ebay'
 	  		});

@@ -73,8 +73,8 @@ const handleGumtree = async(puppeteer, cheerio, keywords, sort) => {
                 thumb: $(this).find('.img-container img').attr('data-src'),
                 title: $(this).find('.title > a > span').text(),
                 price: fixPrice($(this)),
-                shipping: $(this).find('.location-date > span').eq(0).text() + '• ' + $(this).find('.location-date > span').eq(1).text(),
-                rating: 'N/A', //$(this).find('.a-icon-star-small').text(),
+                meta: [$(this).find('.location-date > span').eq(0).text(), $(this).find('.location-date > span').eq(1).text()],
+                rating: null, //$(this).find('.a-icon-star-small').text(),
                 link: 'https://www.gumtree.co.za' + $(this).find('.title > a').attr('href'),
                 site: 'gumtree'
             });

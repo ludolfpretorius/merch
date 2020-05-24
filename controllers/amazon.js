@@ -58,14 +58,17 @@ const handleAmazon = async(puppeteer, cheerio, keywords, sort, axios) => {
 			return 0;
 		}
 	}
+	function fixRating(rating) {
+		return rating.length ? Number(rating.split(' ')[0]) : null
+	}
 	$('.s-result-list > div').each(function() {
 		if (content.length <= 10) {
 	        content.push({
 	            thumb: $(this).find('.s-image').attr('src'),
 	            title: $(this).find('.a-link-normal > .a-text-normal').text(),
 	            price: fixPrice($(this)),
-	            shipping: $(this).find('.a-spacing-top-micro span.a-size-small').text(),
-	            rating: $(this).find('.a-icon-star-small').text(),
+	            meta: $(this).find('.a-spacing-top-micro span.a-size-small').text() ? [$(this).find('.a-spacing-top-micro span.a-size-small').text()] : ['N/A'],
+	            rating: fixRating($(this).find('.a-icon-star-small').text()),
 	            link: 'https://amazon.com' + $(this).find('.a-link-normal').attr('href'),
 	            site: 'amazon'
 	        });

@@ -67,14 +67,17 @@ const handleTakealot = async(puppeteer, cheerio, keywords, sort) => {
         let getPrice = listItem.find('.price .currency').text() + listItem.find('.price .amount').text();
         return Number(getPrice.replace(/([R]|\s|[,])/g, ''))
     }
+    function fixRating(rating) {
+        return rating ? Number(rating.split(' ')[0]) : null
+    }
 	$('.product-list > li').each(function() {
         if (content.length <= 9) {
      		content.push({
      			thumb: $(this).find('.p-thumb img').attr('src'),
                 title: $(this).find('.p-data a').text(),
                 price: fixPrice($(this)),
-                shipping: $(this).find('.shipping-information > div > span > strong').text(),
-                rating: $(this).find('.product-rating > span').attr('title'),
+                meta: $(this).find('.shipping-information > div > span > strong').text() ? [$(this).find('.shipping-information > div > span > strong').text()] : ['N/A'],
+                rating: fixRating($(this).find('.product-rating > span').attr('title')),
                 link: 'https://takealot.com' + $(this).find('.p-thumb > a').attr('href'),
                 site: 'takealot'
       		});
