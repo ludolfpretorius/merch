@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 app.get('/search/:search', (req, res) => {
 	console.time('searched')
 	const { search } = req.params
-	let searchParams = search.replace(/&/g, '=').split('=')
+	let searchParams = search.replace(/[?]/g, '=').split('=')
 	let keywords;
 	let sort;
 	if (searchParams[0] === 'keywords') {
